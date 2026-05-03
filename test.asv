@@ -1,0 +1,55 @@
+clear
+close all
+clc
+
+% --------- Params -------------
+image_pattern = 'demo\demo images\*.tif';
+% ------------------------------
+
+%% Load image directory
+
+files = dir(image_pattern);
+
+fprintf('Found %d images\n', size(files, 1))
+
+%% Import first image to get dimensions
+
+first = imread(fullfile(files(1).folder, files(1).name));
+[n_y, n_x] = size(first);
+n_t = size(files, 1);
+
+% Initialize image array
+images = zeros(n_y, n_x, n_t);
+
+%% Load all images
+
+for i = 1:n_t
+    images(:, :, i) = imread(fullfile(files(1).folder, files(i).name));
+end
+
+%% Prepare for POD
+
+S = reshape(images, [], n_t);
+
+%% Run POD
+
+[lamb, phi, a] = pod(S);
+
+%% Reconstruct image for mode
+img = reshape(phi(:, 25), n_y, n_x);
+
+figure
+imagesc(img)
+colormap(redbluecmap)
+vmax = max(abs(img(:)));
+clim([-vmax, vmax])
+colorbar
+axis image
+
+%% Total Energy
+
+TKE_k = lamb ./ sum(lamb);
+mode_num = 1:50;
+
+figure
+plot(mode_)

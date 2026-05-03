@@ -1,0 +1,39 @@
+function [lamb, phi, a] = pod(S,method)
+% POD function I ported over from python. Used to extract spatial modes
+% from data with 2 spatial dimensions.
+arguments (Input)
+    S % Data Matrix
+    method = 'snapshot' % Method of decomp. Does not really matter since it will return spatial modes regardless
+end
+
+arguments (Output)
+    lamb % Eigenvalues as a descending vector
+    phi % Eigenvectors sorted the same as eigenvalues
+    a % Time coefficients
+end
+
+S_fluc = S - mean(S, 2);
+
+if strcmp(method, 'snapshot')
+    m = size(S,2);
+    C = (m-1)^-1 * (S_fluc.'*S_fluc);
+    [phi, lamb] = eig(C, 'vector');
+    [lamb, idx] = sort(lamb, "descend");
+    phi = phi(:, idx);
+    phi = S_fluc*phi;
+    phi = phi ./ vecnorm(phi);
+
+elseif strcmp(method, 'full')
+    m = size(S,1);
+    C = (m-1)^-1 * (S_fluc*S_fluc.');
+    [phi, lamb] = eig(C, 'vector');
+    [lamb, idx] = sort(lamb, "descend");
+    phi = phi(:, idx);
+
+else
+    error('Method, %s, not supported', method)
+end
+
+a = phi.' * S_fluc;
+
+end
